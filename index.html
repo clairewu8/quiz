@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>小五英文考前衝刺 - 第10~17週單字</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --secondary: #2ECC71;
+            --wrong: #E74C3C;
+            --bg: #F5F7FA;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            touch-action: manipulation;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 560px;
+            text-align: center;
+        }
+
+        .header { margin-bottom: 20px; }
+
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--primary);
+            background: white;
+            color: var(--primary);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+
+        .mode-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .progress-text { font-size: 0.85rem; color: #666; margin-bottom: 5px; }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #EEE;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        #progress-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--secondary);
+            transition: width 0.3s ease;
+        }
+
+        .question-box {
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-bottom: 20px;
+            background: #F9FBFF;
+            border-radius: 15px;
+            padding: 15px;
+        }
+
+        .q-text { font-size: 1.4rem; color: #333; line-height: 1.4; word-break: break-word; }
+        .q-sub { color: #888; font-size: 1rem; margin-top: 8px; }
+        .vocab-focus { font-size: 2.2rem; font-weight: bold; color: var(--primary); word-break: break-word; }
+        .blank-space { color: var(--primary); border-bottom: 2px solid var(--primary); padding: 0 10px; font-weight: bold; }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .opt-btn {
+            padding: 18px 10px;
+            font-size: 1.1rem;
+            border: 1px solid #DDD;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            color: #333;
+            word-break: break-word;
+        }
+
+        @media (hover: hover) {
+            .opt-btn:hover:not(:disabled) { background: #F0F6FF; border-color: var(--primary); }
+        }
+
+        .opt-btn:active:not(:disabled) { transform: scale(0.98); background: #F0F0F0; }
+        .opt-btn.is-wrong { background: #FDECEA; border-color: var(--wrong); color: var(--wrong); }
+        .opt-btn.is-right { background: #E8F8EF; border-color: var(--secondary); color: #1E9E57; }
+        .opt-btn:disabled { cursor: default; }
+
+        #feedback {
+            margin-top: 15px;
+            min-height: 24px;
+            font-weight: bold;
+        }
+
+        .kbd-hint { margin-top: 8px; font-size: 0.75rem; color: #AAA; }
+        @media (hover: none) { .kbd-hint { display: none; } }
+
+        .summary { text-align: left; }
+        .summary ul { padding-left: 20px; line-height: 1.8; }
+        .mistake-tag { color: var(--wrong); font-weight: bold; }
+
+        @media (max-width: 380px) {
+            .q-text { font-size: 1.2rem; }
+            .vocab-focus { font-size: 1.9rem; }
+            .opt-btn { font-size: 1rem; padding: 16px 6px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="game-container">
+    <div class="header">
+        <div class="mode-selector">
+            <button id="btn-sent" class="mode-btn active" onclick="changeMode('sentence')">句型填空</button>
+            <button id="btn-vocab" class="mode-btn" onclick="changeMode('vocab')">英選中</button>
+        </div>
+        <div class="progress-text">已完成: <span id="cur-count">0</span> / <span id="total-count">0</span></div>
+        <div class="progress-bar"><div id="progress-fill"></div></div>
+    </div>
+
+    <div class="question-box" id="q-box"></div>
+
+    <div class="options-grid" id="opt-box"></div>
+
+    <div id="feedback"></div>
+    <div class="kbd-hint">電腦可按鍵盤 1 2 3 4 選答案</div>
+</div>
+
+<script>
+    // 第10~17週單字
+    const vocabulary = [
+        // 第10週
+        {en: "May", zh: "五月", sent: "____ is the fifth month of the year."},
+        {en: "June", zh: "六月", sent: "____ is the sixth month of the year."},
+        {en: "sink", zh: "下沉/水槽", sent: "Wash the dishes in the ____."},
+        {en: "pat", zh: "輕打", sent: "Please ____ the puppy gently."},
+        {en: "tray", zh: "托盤", sent: "The waiter carries food on a ____."},
+        {en: "excited", zh: "興奮的", sent: "I am so ____ about the trip!"},
+        {en: "starving", zh: "挨餓的", sent: "I didn't eat lunch. I'm ____!"},
+        {en: "strong", zh: "強壯的", sent: "He is ____ and can lift a heavy box."},
+
+        // 第11週
+        {en: "July", zh: "七月", sent: "____ is the seventh month of the year."},
+        {en: "August", zh: "八月", sent: "____ is the eighth month of the year."},
+        {en: "cheese", zh: "起司", sent: "I like pizza with a lot of ____."},
+        {en: "oven", zh: "烤箱", sent: "Mom bakes a cake in the ____."},
+        {en: "tired", zh: "疲累的", sent: "I am ____. I want to go to bed."},
+        {en: "well", zh: "好的", sent: "I don't feel ____ today."},
+        {en: "bank", zh: "銀行", sent: "Dad goes to the ____ to get money."},
+        {en: "weak", zh: "虛弱的", sent: "The sick boy is too ____ to stand up."},
+
+        // 第12週
+        {en: "September", zh: "九月", sent: "____ is the ninth month of the year."},
+        {en: "October", zh: "十月", sent: "____ is the tenth month of the year."},
+        {en: "birthday", zh: "生日", sent: "Happy ____! Here is your cake."},
+        {en: "hospital", zh: "醫院", sent: "The doctor works in the ____."},
+        {en: "restaurant", zh: "餐廳", sent: "We eat dinner at a ____ tonight."},
+
+        // 第13週
+        {en: "November", zh: "十一月", sent: "____ is the eleventh month of the year."},
+        {en: "December", zh: "十二月", sent: "____ is the twelfth month of the year."},
+        {en: "surprise", zh: "驚訝", sent: "It's a ____ party for you!"},
+        {en: "remember", zh: "記得", sent: "Do you ____ my name?"},
+        {en: "understand", zh: "了解", sent: "I don't ____ this question."},
+
+        // 第14週
+        {en: "workbook", zh: "習作/練習簿", sent: "Please open your ____ to page 10."},
+        {en: "season", zh: "季節", sent: "Summer is my favorite ____."},
+        {en: "letter", zh: "信/字母", sent: "I wrote a ____ to my friend."},
+        {en: "race", zh: "競賽", sent: "He ran fast and won the ____."},
+        {en: "library", zh: "圖書館", sent: "We read and borrow books in the ____."},
+        {en: "wall", zh: "牆", sent: "There is a clock on the ____."},
+        {en: "mountain", zh: "山", sent: "We climb the ____ on Sunday."},
+
+        // 第15週
+        {en: "spring", zh: "春天", sent: "Flowers bloom in ____."},
+        {en: "summer", zh: "夏天", sent: "It is very hot in ____."},
+        {en: "last", zh: "最後的", sent: "This is the ____ page of the book."},
+        {en: "dear", zh: "親愛的", sent: "____ Mom, I love you."},
+        {en: "hurt", zh: "傷害", sent: "Be careful! You may ____ yourself."},
+        {en: "movie", zh: "電影", sent: "Let's watch a ____ tonight."},
+        {en: "theater", zh: "劇院", sent: "We saw a film at the ____."},
+
+        // 第16週
+        {en: "autumn (fall)", zh: "秋天", sent: "Leaves turn red and fall in ____."},
+        {en: "winter", zh: "冬天", sent: "It is cold and we wear coats in ____."},
+        {en: "stay", zh: "停留", sent: "Please ____ here and wait for me."},
+        {en: "paper", zh: "紙", sent: "Draw a picture on the ____."},
+        {en: "question", zh: "問題", sent: "I have a ____ for the teacher."},
+        {en: "year", zh: "年", sent: "There are twelve months in a ____."},
+
+        // 第17週
+        {en: "key", zh: "鑰匙", sent: "I lost my house ____."},
+        {en: "blackboard", zh: "黑板", sent: "The teacher writes on the ____."},
+        {en: "stick", zh: "棍；貼", sent: "Please ____ the picture on the wall."},
+        {en: "wonderful", zh: "極好的", sent: "We had a ____ time at the party."},
+        {en: "dumpling", zh: "水餃", sent: "I like to eat ____ with soy sauce."},
+        {en: "dragon", zh: "龍", sent: "The ____ is a big animal in Chinese stories."}
+    ];
+
+    let currentMode = 'sentence';
+    let currentIndex = 0;
+    let shuffledList = [];
+    let mistakes = [];
+    let locked = false;
+    let currentOptions = [];
+
+    function shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function changeMode(mode) {
+        currentMode = mode;
+        document.getElementById('btn-sent').classList.toggle('active', mode === 'sentence');
+        document.getElementById('btn-vocab').classList.toggle('active', mode === 'vocab');
+        initGame();
+    }
+
+    function initGame() {
+        currentIndex = 0;
+        mistakes = [];
+        locked = false;
+        shuffledList = shuffle(vocabulary);
+        document.getElementById('total-count').innerText = vocabulary.length;
+        updateUI();
+    }
+
+    function updateUI() {
+        locked = false;
+        if (currentIndex >= shuffledList.length) {
+            showSummary();
+            return;
+        }
+
+        const item = shuffledList[currentIndex];
+        const qBox = document.getElementById('q-box');
+        const optBox = document.getElementById('opt-box');
+        const feedback = document.getElementById('feedback');
+
+        feedback.innerText = "";
+        document.getElementById('cur-count').innerText = currentIndex;
+        document.getElementById('progress-fill').style.width = `${(currentIndex / vocabulary.length) * 100}%`;
+
+        if (currentMode === 'sentence') {
+            qBox.innerHTML = `
+                <div class="q-text">${item.sent.replace('____', '<span class="blank-space">____</span>')}</div>
+                <div class="q-sub">提示：${item.zh}</div>
+            `;
+        } else {
+            qBox.innerHTML = `<div class="vocab-focus">${item.en}</div>`;
+        }
+
+        const key = (currentMode === 'sentence') ? 'en' : 'zh';
+        const correctVal = item[key];
+        const wrongPool = shuffle(vocabulary.filter(v => v[key] !== correctVal)).slice(0, 3).map(v => v[key]);
+        currentOptions = shuffle([correctVal, ...wrongPool]);
+
+        optBox.innerHTML = "";
+        currentOptions.forEach((text, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerText = text;
+            btn.onclick = () => checkAnswer(btn, text, correctVal);
+            optBox.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(btn, selected, correct) {
+        if (locked) return;
+        const feedback = document.getElementById('feedback');
+        if (selected === correct) {
+            locked = true;
+            btn.classList.add('is-right');
+            feedback.innerHTML = `<span style="color:var(--secondary)">答對了！✨</span>`;
+            currentIndex++;
+            setTimeout(updateUI, 600);
+        } else {
+            btn.classList.add('is-wrong');
+            btn.disabled = true;
+            feedback.innerHTML = `<span style="color:var(--wrong)">不對喔，再試一次！</span>`;
+            if (!mistakes.some(m => m.en === shuffledList[currentIndex].en)) {
+                mistakes.push(shuffledList[currentIndex]);
+            }
+        }
+    }
+
+    function showSummary() {
+        const container = document.getElementById('game-container');
+        let resultHtml = `<h2>練習完畢！🎊</h2>`;
+        if (mistakes.length > 0) {
+            resultHtml += `
+                <div class="summary">
+                    <p>需要再加強的單字 (${mistakes.length} 個)：</p>
+                    <ul>${mistakes.map(m => `<li><span class="mistake-tag">${m.en}</span> - ${m.zh}</li>`).join('')}</ul>
+                </div>`;
+        } else {
+            resultHtml += `<p style="color:var(--secondary); font-weight:bold;">太強了！完全沒錯！</p>`;
+        }
+        resultHtml += `<button class="mode-btn active" style="width:100%; margin-top:20px;" onclick="location.reload()">重新開始</button>`;
+        container.innerHTML = resultHtml;
+    }
+
+    // 電腦鍵盤 1~4 選答案
+    document.addEventListener('keydown', e => {
+        const n = parseInt(e.key, 10);
+        if (n >= 1 && n <= 4) {
+            const btns = document.querySelectorAll('#opt-box .opt-btn');
+            if (btns[n - 1] && !btns[n - 1].disabled) btns[n - 1].click();
+        }
+    });
+
+    initGame();
+</script>
+
+</body>
+</html>
